@@ -1,31 +1,44 @@
-// ✅ NY HOVEDKOMPONENT FOR BEREGNE.NO – FULL OPPDATERING
-// Inkluderer: typewriter + rullerende forslag + styling + kort prompt + sponsorvisning
-
-import { useState, useEffect } from 'react';
-import { Input } from './components/ui/input';
-import { Button } from './components/ui/button';
-import { Card } from './components/ui/card';
-import { Loader } from 'lucide-react';
-import { Typewriter } from 'react-simple-typewriter';
+// src/App.jsx – Minimalistisk og mørk UI med typewriter-placeholder
+import { useState } from 'react';
+import { useTypewriter } from 'react-simple-typewriter';
 import sponsorData from './sponsorData';
 
-export default function Home() {
+export default function App() {
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState('');
-  const [activeSponsor, setActiveSponsor] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [sponsor, setSponsor] = useState(null);
 
   const examples = [
-    'Boliglån 3 mill med 5 % rente over 25 år',
-    'Hva koster det å lease en bil til 600 000?',
-    'Strømforbruk ved panelovn 1000W',
-    'Hva er 500 EUR i NOK?',
-    'ROI på 100 000 investert med 8 % over 5 år?',
-    'Kostnad for nytt bad på 5 m²?',
-    'Nettolønn av 700 000?',
-    'Hva er 27 % av 4 950 kr?',
-    'Terminbeløp med 4 % rente i 20 år',
+    'Lån 3 mill, 5 % rente, 25 år',
+    'Hvor mye betaler jeg i renter?',
+    'ROI på 100 000 i fond, 8 % rente, 5 år',
+    'Sparer 5000/mnd i 10 år, 4 % rente',
+    'Lease bil til 600 000?',
+    'Verditap på 20 % av 600 000?',
+    'Leieinntekt 15 000, boligverdi 3,6 mill',
+    'Panelovn 1000W, 8 timer daglig',
+    'Bytte til varmepumpe, spare 10 000 kr/år',
+    '500 euro i NOK?'
   ];
+
+  const [typewriterText] = useTypewriter({
+    words: examples,
+    loop: 0,
+    delaySpeed: 2000,
+    deleteSpeed: 40,
+  });
+
+  const getCategory = (text) => {
+    const lower = text.toLowerCase();
+    if (lower.includes('bil')) return 'kjøretøy';
+    if (lower.includes('lån')) return 'lån';
+    if (lower.includes('invest')) return 'investering';
+    if (lower.includes('strøm') || lower.includes('energi')) return 'energi';
+    if (lower.includes('euro') || lower.includes('dollar')) return 'valuta';
+    if (lower.includes('lønn')) return 'lønn';
+    return 'default';
+  };
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
@@ -33,10 +46,10 @@ export default function Home() {
     setResponse('');
 
     const category = getCategory(input);
-    const sponsor = sponsorData[category] || sponsorData['default'];
-    setActiveSponsor(sponsor);
+    const active = sponsorData[category] || sponsorData['default'];
+    setSponsor(active);
 
-    const prompt = `Svar som en økonomisk kalkulator. Gi et presist og kortfattet svar med klare tall, uten forklaringer eller formler. Du skal ikke invitere til samtale. Beregn det brukeren spør om, og inkluder f.eks. terminbeløp, renter og avdrag hvis relevant. På slutten av svaret legger du til teksten "Beregningen er sponset av ${sponsor.name}".`;
+    const prompt = `Svar som en økonomisk kalkulator. Gi et presist og kortfattet svar med klare tall, uten forklaringer eller formler. Du skal ikke invitere til samtale. Beregn det brukeren spør om, og inkluder f.eks. terminbeløp, renter og avdrag hvis relevant. På slutten av svaret legger du til teksten \'Beregningen er sponset av ${active.name}\'.`;
 
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -49,68 +62,38 @@ export default function Home() {
     setLoading(false);
   };
 
-  const getCategory = (text) => {
-    text = text.toLowerCase();
-    if (text.includes('bil') || text.includes('leasing')) return 'kjøretøy';
-    if (text.includes('lån')) return 'lån';
-    if (text.includes('invest') || text.includes('fond')) return 'investering';
-    if (text.includes('strøm') || text.includes('energi')) return 'energi';
-    if (text.includes('euro') || text.includes('dollar')) return 'valuta';
-    if (text.includes('lønn')) return 'lønn';
-    return 'default';
-  };
-
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 text-gray-800 p-6 flex flex-col items-center">
-      <h1 className="text-4xl md:text-5xl font-bold mb-4">Beregne.no</h1>
+    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-mono">
+      <input
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+        placeholder={typewriterText || 'Hva vil du beregne?'}
+        className="w-full max-w-xl px-4 py-3 text-lg bg-black border-b border-gray-600 placeholder-gray-400 text-white focus:outline-none"
+        autoFocus
+      />
 
-      <p className="text-center text-lg mb-6 max-w-xl text-gray-600">
-        <Typewriter
-          words={examples}
-          loop={0}
-          cursor
-          cursorStyle="_"
-          typeSpeed={50}
-          deleteSpeed={40}
-          delaySpeed={2000}
-        />
-      </p>
-
-      <div className="flex w-full max-w-2xl items-center space-x-2">
-        <Input
-          type="text"
-          placeholder="Hva vil du beregne?"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <Button onClick={handleSubmit} disabled={loading}>
-          {loading ? <Loader className="animate-spin" /> : 'Beregne'}
-        </Button>
-      </div>
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="mt-6 px-6 py-2 bg-white text-black rounded hover:bg-gray-100 font-semibold"
+      >
+        {loading ? 'Beregner...' : 'Beregne'}
+      </button>
 
       {response && (
-        <Card className="mt-6 p-6 w-full max-w-2xl text-left bg-white shadow-lg">
-          <p className="whitespace-pre-line text-lg leading-relaxed font-medium">{response}</p>
-
-          {activeSponsor && (
-            <div className="flex items-center gap-2 mt-6 border-t pt-4 text-sm text-gray-500">
-              <span>Beregningen er sponset av</span>
-              {activeSponsor.logo && (
-                <img src={activeSponsor.logo} alt={activeSponsor.name} className="h-6" />
-              )}
-              {activeSponsor.link && (
-                <a
-                  href={activeSponsor.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline text-blue-500"
-                >
-                  {activeSponsor.name}
-                </a>
-              )}
+        <div className="mt-8 w-full max-w-2xl bg-zinc-900 p-6 rounded-xl shadow text-left whitespace-pre-wrap text-white border border-gray-700">
+          <p className="text-lg leading-relaxed">{response}</p>
+          {sponsor && (
+            <div className="mt-4 text-sm text-gray-400">
+              Beregningen er sponset av{' '}
+              <a href={sponsor.link} className="underline text-blue-400" target="_blank" rel="noopener noreferrer">
+                {sponsor.name}
+              </a>
             </div>
           )}
-        </Card>
+        </div>
       )}
     </main>
   );
