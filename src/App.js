@@ -1,102 +1,117 @@
-// src/App.jsx
-import React, { useState, useEffect } from "react";
-import sponsorData from "./sponsorData"; // Mapping søkeord -> sponsor
+// ✅ NY HOVEDKOMPONENT FOR BEREGNE.NO – FULL OPPDATERING
+// Inkluderer: typewriter + rullerende forslag + styling + kort prompt + sponsorvisning
 
-const App = () => {
-  const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [sponsor, setSponsor] = useState(null);
-  const API_URL = "https://api.beregne.no/chat";
+import { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Loader } from 'lucide-react';
+import { Typewriter } from 'react-simple-typewriter';
+import sponsorData from '@/data/sponsordata';
 
-  const handleSponsorMatch = (query) => {
-    const match = sponsorData.find((item) =>
-      item.keywords.some((kw) => query.toLowerCase().includes(kw))
-    );
-    const fallback = sponsorData.find((item) => item.default);
-    setSponsor(match || fallback || null);
+export default function Home() {
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState('');
+  const [activeSponsor, setActiveSponsor] = useState(null);
+
+  const examples = [
+    'Boliglån 3 mill med 5 % rente over 25 år',
+    'Hva koster det å lease en bil til 600 000?',
+    'Strømforbruk ved panelovn 1000W',
+    'Hva er 500 EUR i NOK?',
+    'ROI på 100 000 investert med 8 % over 5 år?',
+    'Kostnad for nytt bad på 5 m²?',
+    'Nettolønn av 700 000?',
+    'Hva er 27 % av 4 950 kr?',
+    'Terminbeløp med 4 % rente i 20 år',
+  ];
+
+  const handleSubmit = async () => {
+    if (!input.trim()) return;
+    setLoading(true);
+    setResponse('');
+
+    const category = getCategory(input);
+    const sponsor = sponsorData[category] || sponsorData['default'];
+    setActiveSponsor(sponsor);
+
+    const prompt = `Svar som en økonomisk kalkulator. Gi et presist og kortfattet svar med klare tall, uten forklaringer eller formler. Du skal ikke invitere til samtale. Beregn det brukeren spør om, og inkluder f.eks. terminbeløp, renter og avdrag hvis relevant. På slutten av svaret legger du til teksten "Beregningen er sponset av ${sponsor.name}".`;
+
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: `${input}\n${prompt}` }),
+    });
+
+    const data = await res.json();
+    setResponse(data.result);
+    setLoading(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!prompt) return;
-    setIsLoading(true);
-    setResponse("");
-    handleSponsorMatch(prompt);
-
-    // Logg før forespørsel, så det ikke henger ved lang API-respons
-    fetch("https://script.google.com/macros/s/AKfycbwrx9ToGQ-BoIZ1oUQCLvjsp1SkFCDkP2pB-cjKymdruBkHLHZGOd2A-bOyKpwNYIeTAg/exec", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt,
-        sponsorName: sponsor?.sponsor || "Uten sponsor",
-        sponsorLink: sponsor?.link || ""
-      })
-    }).catch((err) => console.warn("Logg feilet:", err));
-
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt,
-          system: "Du er en nøytral og tallfokusert beregningsassistent. Når noen stiller deg et spørsmål, gir du kun det konkrete resultatet i form av tall og relevante beregningspunkter. Unngå innledning, forklaringer og høflighetsfraser. Inkluder gjerne flere tall dersom det er nyttig, for eksempel terminbeløp, renter og totale kostnader. Bruk punkter eller linjeskift, og hold svaret kort, konsist og presist. Ikke svar dersom spørsmålet ikke inneholder konkrete tall eller gir grunnlag for en beregning."
-        })
-      });
-
-      const data = await res.json();
-      setResponse(data.response || "Noe gikk galt. Prøv igjen.");
-    } catch (err) {
-      setResponse("Kunne ikke koble til API.");
-    } finally {
-      setIsLoading(false);
-    }
+  const getCategory = (text) => {
+    text = text.toLowerCase();
+    if (text.includes('bil') || text.includes('leasing')) return 'kjøretøy';
+    if (text.includes('lån')) return 'lån';
+    if (text.includes('invest') || text.includes('fond')) return 'investering';
+    if (text.includes('strøm') || text.includes('energi')) return 'energi';
+    if (text.includes('euro') || text.includes('dollar')) return 'valuta';
+    if (text.includes('lønn')) return 'lønn';
+    return 'default';
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 text-center">
-      <h1 className="text-4xl font-bold mb-4">Beregne.no</h1>
-      <form onSubmit={handleSubmit} className="w-full max-w-xl">
-        <input
-          className="w-full p-3 border rounded-lg mb-4 shadow"
-          placeholder="Hva vil du beregne?"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
+    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 text-gray-800 p-6 flex flex-col items-center">
+      <h1 className="text-4xl md:text-5xl font-bold mb-4">Beregne.no</h1>
+
+      <p className="text-center text-lg mb-6 max-w-xl text-gray-600">
+        <Typewriter
+          words={examples}
+          loop={0}
+          cursor
+          cursorStyle="_"
+          typeSpeed={50}
+          deleteSpeed={40}
+          delaySpeed={2000}
         />
-        <button
-          className="w-full bg-black text-white py-2 rounded hover:bg-gray-800"
-          type="submit"
-        >
-          {isLoading ? "Beregner..." : "Beregne"}
-        </button>
-      </form>
+      </p>
+
+      <div className="flex w-full max-w-2xl items-center space-x-2">
+        <Input
+          type="text"
+          placeholder="Hva vil du beregne?"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <Button onClick={handleSubmit} disabled={loading}>
+          {loading ? <Loader className="animate-spin" /> : 'Beregne'}
+        </Button>
+      </div>
 
       {response && (
-        <div className="mt-6 bg-gray-100 p-4 rounded shadow max-w-2xl">
-          <div className="whitespace-pre-wrap text-left">{response}</div>
-          {sponsor && (
-            <div className="mt-4 text-sm text-gray-600 flex items-center gap-2">
-              {sponsor.logo && (
-                <img src={sponsor.logo} alt={sponsor.name} className="h-6" />
+        <Card className="mt-6 p-6 w-full max-w-2xl text-left bg-white shadow-lg">
+          <p className="whitespace-pre-line text-lg leading-relaxed font-medium">{response}</p>
+
+          {activeSponsor && (
+            <div className="flex items-center gap-2 mt-6 border-t pt-4 text-sm text-gray-500">
+              <span>Beregningen er sponset av</span>
+              {activeSponsor.logo && (
+                <img src={activeSponsor.logo} alt={activeSponsor.name} className="h-6" />
               )}
-              <span>
-                Beregningen er sponset av{' '}
+              {activeSponsor.link && (
                 <a
-                  href={sponsor.link}
+                  href={activeSponsor.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
+                  className="underline text-blue-500"
                 >
-                  {sponsor.name}
+                  {activeSponsor.name}
                 </a>
-              </span>
+              )}
             </div>
           )}
-        </div>
+        </Card>
       )}
-    </div>
+    </main>
   );
-};
-
-export default App;
+}
