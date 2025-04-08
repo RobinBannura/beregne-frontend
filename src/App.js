@@ -2,9 +2,9 @@
 // Inkluderer: typewriter + rullerende forslag + styling + kort prompt + sponsorvisning
 
 import { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Input } from './components/ui/input';
+import { Button } from './components/ui/button';
+import { Card } from './components/ui/card';
 import { Loader } from 'lucide-react';
 import { Typewriter } from 'react-simple-typewriter';
 import sponsorData from './sponsorData';
