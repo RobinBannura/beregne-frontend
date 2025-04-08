@@ -24,26 +24,29 @@ const App = () => {
     setResponse("");
     handleSponsorMatch(prompt);
 
+    // Logg før forespørsel, så det ikke henger ved lang API-respons
+    fetch("https://script.google.com/macros/s/AKfycbwrx9ToGQ-BoIZ1oUQCLvjsp1SkFCDkP2pB-cjKymdruBkHLHZGOd2A-bOyKpwNYIeTAg/exec", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt,
+        sponsorName: sponsor?.sponsor || "Uten sponsor",
+        sponsorLink: sponsor?.link || ""
+      })
+    }).catch((err) => console.warn("Logg feilet:", err));
+
     try {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
-      setResponse(data.response || "Noe gikk galt. Prøv igjen.");
-
-      // Logg beregningen til Google Sheets
-      fetch("https://script.google.com/macros/s/AKfycbwrx9ToGQ-BoIZ1oUQCLvjsp1SkFCDkP2pB-cjKymdruBkHLHZGOd2A-bOyKpwNYIeTAg/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt,
-          sponsorName: sponsor?.sponsor || "Uten sponsor",
-          sponsorLink: sponsor?.link || ""
-        }),
+          system: "Du er en nøytral og tallfokusert beregningsassistent. Når noen stiller deg et spørsmål, gir du kun det konkrete resultatet i form av tall og relevante beregningspunkter. Unngå innledning, forklaringer og høflighetsfraser. Inkluder gjerne flere tall dersom det er nyttig, for eksempel terminbeløp, renter og totale kostnader. Bruk punkter eller linjeskift, og hold svaret kort, konsist og presist. Ikke svar dersom spørsmålet ikke inneholder konkrete tall eller gir grunnlag for en beregning."
+        })
       });
 
+      const data = await res.json();
+      setResponse(data.response || "Noe gikk galt. Prøv igjen.");
     } catch (err) {
       setResponse("Kunne ikke koble til API.");
     } finally {
