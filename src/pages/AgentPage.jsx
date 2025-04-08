@@ -1,63 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import AgentChat from '../components/AgentChat';
+// src/pages/AgentPage.jsx
+
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import AgentChat from "../components/AgentChat";
 
 const AgentPage = () => {
-  const { navn } = useParams();
-  const [agentData, setAgentData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const sheetBase =
-    'https://docs.google.com/spreadsheets/d/e/2PACX-1vTi6e6OPof1gpDRsMXMhtmROv7dr1aWNtnWI53pbHSZoBOCG_dIlHkMTD8bS9QxY94MGPNbt8U4gx4Q/pub?output=csv&sheet=';
-
-  const imageOverrides = {
-    martin: '/avatars/martin.png',
-    // legg til flere agenter her ved behov
-  };
+  const { name } = useParams();
+  const [agent, setAgent] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAgentData = async () => {
       try {
-        const res = await fetch(`${sheetBase}${navn}`);
-        const csv = await res.text();
+        const response = await fetch(
+          "https://docs.google.com/spreadsheets/d/e/2PACX-1vTi6e6OPof1gpDRsMXMhtmROv7dr1aWNtnWI53pbHSZoBOCG_dIlHkMTD8bS9QxY94MGPNbt8U4gx4Q/pub?output=csv"
+        );
+        const csv = await response.text();
+        const lines = csv.split("\n").map((line) => line.trim()).filter(Boolean);
+        const headers = lines[0].split(",").map((h) => h.trim());
+        const agents = lines.slice(1).map((line) => {
+          const values = line.split(",").map((v) => v.trim());
+          return Object.fromEntries(headers.map((h, i) => [h, values[i]]));
+        });
 
-        const [headerLine, ...rows] = csv.trim().split('\n');
-        const headers = headerLine.split(',');
-        const values = rows[0].split(',');
+        const match = agents.find(
+          (a) => a.Navn.toLowerCase() === decodeURIComponent(name).toLowerCase()
+        );
 
-        const data = headers.reduce((acc, key, i) => {
-          acc[key.trim()] = values[i]?.trim();
-          return acc;
-        }, {});
-
-        setAgentData(data);
+        if (match) {
+          setAgent(match);
+        } else {
+          setError("Fant ikke agenten.");
+        }
       } catch (err) {
-        console.error('Feil ved henting av agentdata:', err);
-      } finally {
-        setLoading(false);
+        setError("Kunne ikke hente data.");
       }
     };
 
-    fetchData();
-  }, [navn]);
+    fetchAgentData();
+  }, [name]);
 
-  if (loading) return <div className="text-center mt-10">Laster agent...</div>;
-  if (!agentData) return <div className="text-center mt-10 text-red-600">Fant ikke agenten.</div>;
+  if (error) {
+    return <div className="text-center mt-10 text-red-500">{error}</div>;
+  }
 
-  const avatar = imageOverrides[navn.toLowerCase()] || agentData.AvatarURL;
+  if (!agent) {
+    return <div className="text-center mt-10">Laster agent...</div>;
+  }
 
-  return (
-    <div className="min-h-screen bg-white px-4 py-8 flex flex-col items-center">
-      <img src={avatar} alt={agentData.Navn} className="w-32 h-32 rounded-full mb-4 shadow" />
-      <h1 className="text-3xl font-bold">{agentData.Navn}</h1>
-      <p className="text-gray-600">{agentData.Tittel}</p>
-      <p className="mt-4 max-w-xl text-center text-gray-700">{agentData.Beskrivelse}</p>
-
-      <div className="w-full max-w-2xl mt-10">
-        <AgentChat prompt={agentData.Prompt} />
-      </div>
-    </div>
-  );
+  return <AgentChat agent={agent} />;
 };
 
 export default AgentPage;
