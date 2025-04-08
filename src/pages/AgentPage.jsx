@@ -10,6 +10,13 @@ const AgentPage = () => {
   const sheetBase =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTi6e6OPof1gpDRsMXMhtmROv7dr1aWNtnWI53pbHSZoBOCG_dIlHkMTD8bS9QxY94MGPNbt8U4gx4Q/pub?output=csv&sheet=';
 
+  // Hardkodede avatarer (fallback)
+  const imageOverrides = {
+    martin: 'https://i.imgur.com/hbyMIvJ.png',
+    // legg til flere agenter her ved behov
+    // eks: kris: 'https://i.imgur.com/...png'
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -39,9 +46,12 @@ const AgentPage = () => {
   if (loading) return <div className="text-center mt-10">Laster agent...</div>;
   if (!agentData) return <div className="text-center mt-10 text-red-600">Fant ikke agenten.</div>;
 
+  // Bruk hardkodet bilde hvis det finnes, ellers bruk det fra Google Sheet
+  const avatar = imageOverrides[navn.toLowerCase()] || agentData.AvatarURL;
+
   return (
     <div className="min-h-screen bg-white px-4 py-8 flex flex-col items-center">
-      <img src={agentData.AvatarURL} alt={agentData.Navn} className="w-32 h-32 rounded-full mb-4 shadow" />
+      <img src={avatar} alt={agentData.Navn} className="w-32 h-32 rounded-full mb-4 shadow" />
       <h1 className="text-3xl font-bold">{agentData.Navn}</h1>
       <p className="text-gray-600">{agentData.Tittel}</p>
       <p className="mt-4 max-w-xl text-center text-gray-700">{agentData.Beskrivelse}</p>
