@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Loader } from 'lucide-react';
 import { Typewriter } from 'react-simple-typewriter';
-import sponsorData from '@/data/sponsordata';
+import sponsorData from './sponsorData';
 
 export default function Home() {
   const [input, setInput] = useState('');
