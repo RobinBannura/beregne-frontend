@@ -10,11 +10,9 @@ const AgentPage = () => {
   const sheetBase =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTi6e6OPof1gpDRsMXMhtmROv7dr1aWNtnWI53pbHSZoBOCG_dIlHkMTD8bS9QxY94MGPNbt8U4gx4Q/pub?output=csv&sheet=';
 
-  // Hardkodede avatarer (fallback)
   const imageOverrides = {
-    martin: 'https://i.imgur.com/hbyMIvJ.png',
+    martin: '/avatars/martin.png',
     // legg til flere agenter her ved behov
-    // eks: kris: 'https://i.imgur.com/...png'
   };
 
   useEffect(() => {
@@ -46,7 +44,6 @@ const AgentPage = () => {
   if (loading) return <div className="text-center mt-10">Laster agent...</div>;
   if (!agentData) return <div className="text-center mt-10 text-red-600">Fant ikke agenten.</div>;
 
-  // Bruk hardkodet bilde hvis det finnes, ellers bruk det fra Google Sheet
   const avatar = imageOverrides[navn.toLowerCase()] || agentData.AvatarURL;
 
   return (

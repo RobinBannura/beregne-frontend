@@ -6,11 +6,9 @@ const AgentGrid = () => {
   const sheetURL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTi6e6OPof1gpDRsMXMhtmROv7dr1aWNtnWI53pbHSZoBOCG_dIlHkMTD8bS9QxY94MGPNbt8U4gx4Q/pub?output=csv&sheet=Agenter';
 
-  // Hardkodede avatarer
   const avatarOverrides = {
-    martin: 'https://i.imgur.com/hbyMIvJ.png',
-    // kris: 'https://i.imgur.com/...png',
-    // magnus: 'https://i.imgur.com/...png'
+    martin: '/avatars/martin.png',
+    // legg til flere agenter her hvis ønskelig
   };
 
   useEffect(() => {
@@ -46,7 +44,7 @@ const AgentGrid = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {agents.map((agent, index) => {
           const navnKey = agent.Navn?.toLowerCase() || '';
-          const avatar = avatarOverrides[navnKey] || agent.AvatarURL || 'https://via.placeholder.com/150';
+          const avatar = avatarOverrides[navnKey] || agent.AvatarURL || '/avatars/default.png';
 
           return (
             <Link
