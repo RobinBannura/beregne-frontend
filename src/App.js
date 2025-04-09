@@ -1,4 +1,3 @@
-// src/App.jsx – Minimalistisk og mørk UI med sponsor-logo + forbedret feilbehandling
 import { useState } from 'react';
 import { useTypewriter } from 'react-simple-typewriter';
 import sponsorData from './sponsorData';
@@ -59,20 +58,24 @@ export default function App() {
         body: JSON.stringify({ prompt: `${input}\n${prompt}` }),
       });
 
-      if (!res.ok) {
-        throw new Error(`Feil fra server: ${res.status}`);
+      const text = await res.text();
+      let data;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (jsonError) {
+        console.error('❌ Ugyldig JSON fra API:', text);
+        throw new Error('Ugyldig svar fra API');
       }
 
-      const data = await res.json();
-      const result = data.result || data.response;
+      const result = data?.result || data?.response;
 
       if (result) {
-        setResponse(result);
+        setResponse(result.trim());
       } else {
         setResponse('Ingen beregning mottatt fra server.');
       }
     } catch (err) {
-      console.error('Feil ved API-kall:', err);
+      console.error('Feil ved API-kall:', err.message);
       setResponse('Beklager, det oppsto en feil. Prøv igjen senere.');
     } finally {
       setLoading(false);
