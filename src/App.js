@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTypewriter } from 'react-simple-typewriter';
-import { ResultCard } from '@/components/ResultCard';
+import { ResultCard } from './components/ResultCard';
 import sponsorData from './sponsorData';
 
 export default function App() {
