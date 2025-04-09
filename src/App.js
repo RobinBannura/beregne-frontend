@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTypewriter } from 'react-simple-typewriter';
+import { ResultCard } from '@/components/ResultCard';
 import sponsorData from './sponsorData';
 
 export default function App() {
@@ -9,16 +10,16 @@ export default function App() {
   const [sponsor, setSponsor] = useState(null);
 
   const examples = [
-    'Lån 3 000 000 kr, 5 % rente, 25 år – hva er terminbeløpet?',
-    'Sparing 5 000 kr/mnd i 10 år med 4 % rente – hva får jeg?',
-    'Avkastning på 100 000 kr investert i fond med 8 % rente i 5 år',
-    'Hva koster det å lease en bil til 600 000 kr i 3 år?',
-    'Verditap på 20 % av en bil til 600 000 kr – hva er ny verdi?',
-    'Yield på bolig: verdi 3,6 mill, leieinntekter 15 000 kr/mnd',
-    'Panelovn 1000W brukt 8 timer daglig – hva er strømforbruket?',
-    'Bytte til varmepumpe – hvor mye sparer jeg hvis jeg bruker 25 000 kr på strøm per år?',
-    'Valutakurs: hva er 500 euro i norske kroner?',
-    'Lån 2 500 000 kr, 4,5 % rente, 30 år – hvor mye renter totalt?'
+    'Lån 3 mill – 5 % rente, 25 år. Terminbeløp?',
+    'Sparing 5 000/mnd i 10 år med 4 % rente',
+    'Avkastning: 100 000 kr i fond, 8 % rente, 5 år',
+    'Leasing 600 000 kr bil over 3 år. Kostnad?',
+    'Bilverdi etter 20 % fall fra 600 000 kr',
+    'Yield: bolig 3,6 mill, leie 15 000/mnd',
+    'Panelovn 1000W, 8 t/dag. Strømforbruk?',
+    'Varmepumpe: strømbruk 25 000 kr/år. Sparing?',
+    '500 euro i NOK (valutakurs)',
+    'Lån 2,5 mill – 4,5 % rente, 30 år. Renter totalt?'
   ];
 
   const [typewriterText] = useTypewriter({
@@ -103,31 +104,7 @@ export default function App() {
       </button>
 
       {response && (
-        <div className="mt-8 w-full max-w-2xl bg-zinc-900 p-6 rounded-xl shadow text-left whitespace-pre-wrap text-white border border-gray-700">
-          <p className="text-lg leading-relaxed">{response}</p>
-          {sponsor && (
-            <div className="mt-6 flex items-center gap-4 text-sm text-gray-400">
-              {sponsor.logo && (
-                <img
-                  src={sponsor.logo}
-                  alt={sponsor.name}
-                  className="w-16 h-6 object-contain"
-                />
-              )}
-              <div>
-                Beregningen er sponset av{' '}
-                <a
-                  href={sponsor.link}
-                  className="underline text-blue-400"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {sponsor.name}
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
+        <ResultCard result={response} sponsor={sponsor} />
       )}
     </main>
   );
