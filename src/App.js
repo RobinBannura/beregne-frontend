@@ -52,7 +52,7 @@ export default function App() {
     const prompt = `Svar som en økonomisk kalkulator. Gi et presist og kortfattet svar med klare tall, uten forklaringer eller formler. Du skal ikke invitere til samtale. Beregn det brukeren spør om, og inkluder f.eks. terminbeløp, renter og avdrag hvis relevant. På slutten av svaret legger du til teksten 'Beregningen er sponset av ${active.name}'.`;
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch('https://api.beregne.no/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: `${input}\n${prompt}` }),
