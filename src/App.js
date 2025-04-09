@@ -71,7 +71,8 @@ export default function App() {
       const result = data?.result || data?.response;
 
       if (result) {
-        setResponse(result.trim());
+        const split = result.trim().split(/Beregningen er sponset av/i);
+        setResponse(split[0].trim());
       } else {
         setResponse('Ingen beregning mottatt fra server.');
       }
@@ -104,7 +105,7 @@ export default function App() {
       </button>
 
       {response && (
-        <ResultCard result={response} sponsor={sponsor} />
+        <ResultCard response={response} sponsor={sponsor} />
       )}
     </main>
   );
