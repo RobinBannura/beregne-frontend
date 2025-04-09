@@ -1,38 +1,30 @@
 // src/components/ResultCard.jsx
-
-import React from "react";
-
-export function ResultCard({ result, sponsor }) {
-  if (!result) return null;
-
-  return (
-    <div className="flex flex-col items-center justify-center text-center mt-6">
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-md max-w-lg w-full">
-        <p className="text-white text-xl mb-4">{result}</p>
-        <hr className="border-zinc-700 w-full my-2" />
-        <p className="text-sm text-zinc-400 mb-2">
-          Beregningen er sponset av{" "}
-          {sponsor?.link ? (
-            <a
-              href={sponsor.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:underline"
-            >
-              {sponsor.name}
-            </a>
-          ) : (
-            sponsor?.name
-          )}
-        </p>
-        {sponsor?.logo && (
-          <img
-            src={sponsor.logo}
-            alt={sponsor.name}
-            className="h-8 object-contain mt-2"
-          />
+export function ResultCard({ response, sponsor }) {
+    return (
+      <div className="mt-8 w-full max-w-2xl mx-auto bg-zinc-900 p-6 rounded-xl shadow text-center text-white border border-gray-700">
+        <p className="text-xl font-mono mb-6">{response}</p>
+        
+        <div className="border-t border-gray-700 pt-4 text-sm text-gray-400">
+          Beregningen er sponset av{' '}
+          <a
+            href={sponsor.link}
+            className="underline text-blue-400"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {sponsor.name}
+          </a>
+        </div>
+  
+        {sponsor.logo && (
+          <div className="mt-4">
+            <img
+              src={sponsor.logo}
+              alt={sponsor.name}
+              className="mx-auto w-auto h-6 object-contain"
+            />
+          </div>
         )}
       </div>
-    </div>
-  );
-}
+    );
+  }
