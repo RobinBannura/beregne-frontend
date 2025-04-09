@@ -1,4 +1,4 @@
-// src/App.jsx – Minimalistisk og mørk UI med sponsor-logo
+// src/App.jsx – Minimalistisk og mørk UI med sponsor-logo + forbedret feilbehandling
 import { useState } from 'react';
 import { useTypewriter } from 'react-simple-typewriter';
 import sponsorData from './sponsorData';
@@ -34,8 +34,8 @@ export default function App() {
     if (lower.includes('bil')) return 'kjøretøy';
     if (lower.includes('lån')) return 'lån';
     if (lower.includes('invest')) return 'investering';
-    if (lower.includes('strøm') || lower.includes('energi')) return 'energi';
-    if (lower.includes('euro') || lower.includes('dollar')) return 'valuta';
+    if (lower.includes('strøm') || lower.includes('energi') || lower.includes('panelovn')) return 'energi';
+    if (lower.includes('euro') || lower.includes('dollar') || lower.includes('nok')) return 'valuta';
     if (lower.includes('lønn')) return 'lønn';
     return 'default';
   };
@@ -44,22 +44,39 @@ export default function App() {
     if (!input.trim()) return;
     setLoading(true);
     setResponse('');
+    setSponsor(null);
 
     const category = getCategory(input);
     const active = sponsorData[category] || sponsorData['default'];
     setSponsor(active);
 
-    const prompt = `Svar som en økonomisk kalkulator. Gi et presist og kortfattet svar med klare tall, uten forklaringer eller formler. Du skal ikke invitere til samtale. Beregn det brukeren spør om, og inkluder f.eks. terminbeløp, renter og avdrag hvis relevant. På slutten av svaret legger du til teksten \'Beregningen er sponset av ${active.name}\'.`;
+    const prompt = `Svar som en økonomisk kalkulator. Gi et presist og kortfattet svar med klare tall, uten forklaringer eller formler. Du skal ikke invitere til samtale. Beregn det brukeren spør om, og inkluder f.eks. terminbeløp, renter og avdrag hvis relevant. På slutten av svaret legger du til teksten 'Beregningen er sponset av ${active.name}'.`;
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: `${input}\n${prompt}` }),
-    });
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: `${input}\n${prompt}` }),
+      });
 
-    const data = await res.json();
-    setResponse(data.result);
-    setLoading(false);
+      if (!res.ok) {
+        throw new Error(`Feil fra server: ${res.status}`);
+      }
+
+      const data = await res.json();
+      const result = data.result || data.response;
+
+      if (result) {
+        setResponse(result);
+      } else {
+        setResponse('Ingen beregning mottatt fra server.');
+      }
+    } catch (err) {
+      console.error('Feil ved API-kall:', err);
+      setResponse('Beklager, det oppsto en feil. Prøv igjen senere.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
