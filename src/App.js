@@ -31,7 +31,9 @@ export default function App() {
 
   const getCategory = (text) => {
     const lower = text.toLowerCase();
-    if (lower.includes('bil')) return 'kjøretøy';
+    if (lower.includes('boliglån')) return 'boliglån';
+    if (lower.includes('billån')) return 'kjøretøy';
+    if (lower.includes('forbrukslån')) return 'kjøretøy';
     if (lower.includes('lån')) return 'lån';
     if (lower.includes('invest')) return 'investering';
     if (lower.includes('strøm') || lower.includes('energi') || lower.includes('panelovn')) return 'energi';
@@ -50,13 +52,20 @@ export default function App() {
     const active = sponsorData[category] || sponsorData['default'];
     setSponsor(active);
 
-    const prompt = `Svar som en økonomisk kalkulator. Gi et presist og kortfattet svar med klare tall, uten forklaringer eller formler. Du skal ikke invitere til samtale. Beregn det brukeren spør om, og inkluder f.eks. terminbeløp, renter og avdrag hvis relevant. På slutten av svaret legger du til teksten 'Beregningen er sponset av ${active.name}'.`;
+    const prompt = `Svar som en økonomisk kalkulator. Gi et strukturert svar med linjeskift og tydelige inndelinger. Beregn og oppgi:
+- Terminbeløp per måned
+- Renter og avdrag per måned
+- Totale renter og totalkostnad for lånet
+- Nominell og effektiv rente (inkludert termingebyr på 50 kr)
+Bruk formatet:
+Terminbeløp per måned: ...\nRenter per måned: ...\nAvdrag per måned: ...\nTotalt renter: ...\nTotalkostnad: ...\nNominell rente: ...\nEffektiv rente: ...
+Svar kortfattet og uten forklaringer. På slutten av svaret legger du til teksten 'Beregningen er sponset av ${active.name}'.`;
 
     try {
       const res = await fetch('https://api.beregne.no/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: `${input}\n${prompt}` }),
+        body: JSON.stringify({ prompt: input }),
       });
 
       const text = await res.text();
